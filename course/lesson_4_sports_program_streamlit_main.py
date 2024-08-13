@@ -26,10 +26,10 @@ if submit_button:
 
         infos_result = create_gather_infos_crew().kickoff(inputs=sport_activity_input)
 
-        summary_input = {
+        plan_input = {
             'sports_aspects_task': sports_aspects_task.output.raw,
             'location_finder_task': location_finder_task.output.raw,
-            'nutrition_task' : nutrition_task.output.raw,
+            'nutrition_task': nutrition_task.output.raw,
             'mental_activity_plan_task': mental_activity_plan_task.output.raw,
             'fitness_activity_plan_task': fitness_activity_plan_task.output.raw,
             'sport': sport,
@@ -37,13 +37,20 @@ if submit_button:
             'start_date': start_date
         }
 
-        final_result = create_plan_crew().kickoff(inputs=summary_input)
+        final_result = create_plan_crew().kickoff(inputs=plan_input)
+        additional_md = '# Wrap-Up and Action Points'
+        report = (f'{final_result.raw}\n\n# Wrap-Up and Action Points\n'
+                  f'## Mental Exercises\n{mental_activity_plan_task.output.raw}\n'
+                  f'## Fitness Exercises\n{fitness_activity_plan_task.output.raw}')
 
         if language and language.lower() != 'english':
             translation_input = {
-                'translation_input': sports_activity_plan_task.output.raw,
+                'translation_input': report,
                 'language': language
             }
-            final_result = create_translation_crew().kickoff(inputs=translation_input)
+            report = create_translation_crew().kickoff(inputs=translation_input)
 
-        st.markdown(final_result.raw)
+        with open("output/sport/final_report.md", "w", encoding="utf-8") as file:
+            file.write(report)
+
+        st.markdown(report)

@@ -26,7 +26,7 @@ llm = ChatOpenAI(
 sports_scout_agent = Agent(
     role='Sports Scout',
     goal='Finds out the key aspects of the sport you are interested in.',
-    backstory='A person who always observes upcoming and tradional sport activities.',
+    backstory='A person who always observes upcoming and traditional sport activities.',
     llm=llm,
     tools=[custom_search_tool, crewai_scrape_tool],
     allow_delegation=True,
@@ -98,7 +98,7 @@ personal_secretary_agent = Agent(
 translator_agent = Agent(
     role='Translator',
     goal='Translates a text into the target language.',
-    backstory='Speaks multiple languages and can has extensive experience translating from and to other langauges.',
+    backstory='Speaks multiple languages and can has extensive experience translating from and to other languages.',
     llm=llm,
     tools=[],
     allow_delegation=True,
@@ -107,10 +107,10 @@ translator_agent = Agent(
 
 sports_aspects_task = Task(
     description="""\
-            Analyze the main aspects of the sport {sport} \
-            such as cost, best age to do it, key elements, equipment needed.
-        """,
-    expected_output='A detailed report on the specific sports activity.',
+        Create a list of the key elements of the sport {sport} in \
+        terms of Techniques, Problem Solving, Tactics, Physical Strength and Endurance
+    """,
+    expected_output='A detailed list of the key elements formatted as markdown only.',
     agent=sports_scout_agent,
     async_execution=False,
     output_file='output/sport/sports_aspects_task.md'
@@ -129,8 +129,9 @@ location_finder_task = Task(
 
 nutrition_task = Task(
     description="""'\
-            Suggest at least 5 healthy complete meals with detailed ingredients to support the {sport} activity. \
-        """,
+        Suggest at least 5 complete healthy meals for breakfast, lunch and dinner \n
+        with detailed ingredients to support the {sport} activity. \
+    """,
     expected_output='A list of at least 5 healthy meals.',
     agent=nutrition_expert_agent,
     async_execution=False,
@@ -139,11 +140,11 @@ nutrition_task = Task(
 
 mental_activity_plan_task = Task(
     description="""'\
-            Recommend at least 2 mental exercises to support your sport {sport}.\
-            Recommend at least 3 brain exercises to improve memory, cognition and creativity.\
-            Provide at least 5 exercises to follow.
-        """,
-    expected_output='A list with at least 5 concrete and detailed exercises.',
+        Recommend at least 2 mental exercises to support your sport {sport}.\
+        Recommend at least 3 brain exercises to improve memory, cognition and creativity.\
+        Provide at least 5 exercises to follow.
+    """,
+    expected_output='A list with at least 5 concrete and detailed exercises formatted as markdown only.',
     agent=mental_trainer_agent,
     async_execution=False,
     output_file='output/sport/mental_activity_plan_task.md'
@@ -151,9 +152,12 @@ mental_activity_plan_task = Task(
 
 fitness_activity_plan_task = Task(
     description="""'\
-            Compile at least 5 Fitness exercises suitable for {sport}.\
-        """,
-    expected_output='A list of at least 5 fitness exercises',
+        Compile at least 5 Fitness exercises suitable for {sport}.\
+        They should be detailed with a description, that explains all steps \
+        involved when doing them. 
+    """,
+    expected_output="""A list of at least 5 detailed fitness exercises with an execution description \n'
+            formatted as markdown only.""",
     agent=fitness_trainer_agent,
     async_execution=False,
     output_file='output/sport/fitness_activity_plan_task.md'
@@ -161,59 +165,62 @@ fitness_activity_plan_task = Task(
 
 sports_activity_plan_task = Task(
     description="""\
-            Considering the context given: \n
-            Start date: {start_date}
-            Sport aspects: {sports_aspects_task} \n\n 
-            Locations: {location_finder_task} \n\n
-            Nutrition: {nutrition_task} \n\n
-            Mental exercises: {mental_activity_plan_task}\n\n
-            Fitness exercises: {fitness_activity_plan_task}\n
-            
-            Create a report with the following outline:
-            
-            Introduction: Describe the {sport} at the beginning in a motivating way so you really want to get started.
-            Create a 7 Days daily routine consisting of:
-            
-            -start date {start_date}            
-            - sport aspects
-            - exact location
-            - mental or brain exercises
-            - nutrition plan or meal
-            - fitness exercises
-            
-            Make sure to be as detailed as possible for the mental exercises, nutrition plan or meals \
-            and the fitness exercises.
-        """,
-    expected_output='A complete 7 day plan with very detailed information, formatted as markdown.',
+        Considering the context given: \n
+        Start date: {start_date}
+        Sport aspects: {sports_aspects_task} \n\n 
+        Locations: {location_finder_task} \n\n
+        Nutrition: {nutrition_task} \n\n
+        Mental exercises: {mental_activity_plan_task}\n\n
+        Fitness exercises: {fitness_activity_plan_task}\n
+        
+        Create a report with the following structure.            
+        
+        Introduction: Describe the {sport} at the beginning in a motivating way so you really want to get started.
+        Create a 7 Days daily routine consisting of:
+        
+        - date            
+        - sport aspects
+        - exact location
+        - mental or brain exercises
+        - nutrition plan or meal
+        - fitness exercises
+        
+        Make sure to be as detailed as possible for the mental exercises, nutrition plan or meals \
+        and the fitness exercises.
+    """,
+    expected_output='A complete 7 day plan with very detailed information, formatted as markdown only.',
     agent=personal_secretary_agent,
     output_file='output/sport/sports_activity_plan_task.md'
 )
 
 format_task = Task(
     description="""\
-            Make sure that the 7 day plan has an optimal structure and that\
-            all headlines and bullet points are formatted correctly as markdown.\
-            It should follow the outline in markdown:
-            # 7 day plan Headline
-            ## Introduction
-            ## date / day 
-            ### sport aspects
-            ### exact location
-            ### mental exercises
-            ### nutrition plan or meal
-            ### fitness exercises
-        """,
-    expected_output='A 7 day plan with a optimal structure in well formatted markdown.',
+        Make sure that the 7 day plan has an optimal structure and that\
+        all headlines and bullet points are formatted correctly as markdown.\
+        It should follow the outline in ONLY markdown:
+        # 7 Days Daily Routine for {sport}
+        ## Introduction
+        ## date / day 
+        ### sport aspects
+        ### exact location
+        ### mental exercises
+        ### nutrition plan or meal
+        ### fitness exercises
+        
+        Only focus on the markdown structure. Do NOT edit the content of the 7 day plan!!!\
+        The markdown has to be RAW markdown. No fences at the beginning or end.
+    """,
+    expected_output='A 7 day plan with a optimal structure in well formatted markdown only.',
     agent=personal_secretary_agent,
     output_file='output/sport/format_task.md'
 )
 
 translation_task = Task(
     description="""\
-            Translate the 7 day plan provided by \n\n
-            {formatted_sports_activity_plan}\n\n
-            into the target language {language}.
-        """,
+        Translate the 7 day plan provided by \n\n
+        {formatted_sports_activity_plan}\n\n
+        into the target language {language}.
+    """,
     expected_output='The report translated the 7 day plan into the target language {language}',
     agent=translator_agent,
     output_file='output/sport/translation_task.md'
